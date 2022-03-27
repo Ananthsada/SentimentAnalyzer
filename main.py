@@ -1,10 +1,9 @@
 import pandas as pd
 from collections import Counter
 import re
+import spacy
+from spacy.lang.en.stop_words import STOP_WORDS
 
-stopwords = ['the', 'a', 'an', 'and', 'or', 'is', 'was', 'be', 'have', 'had', 'been', 'are', 'were', 'could', 'would',
-             'of', 'to', 'in', 'at', 'this', 'that', 'by', 'for','there', 'here', 'as', 'it', 'as', 'with', 'but', 'i',
-             'he', 'she', 'her', 'him', 'them', 'we', 'us', 'on', 'nan', 'you', 'br', 'his', 'its']
 
 # Funtion to return 1 or 0 as output
 # Input: Entire row
@@ -21,32 +20,19 @@ def makeOutputInt(row):
 def preprocessInput(row):
     regex = re.compile('[^a-zA-Z ]')
     output = regex.sub('', row.lower())
-    return ' '.join(i for i in output.split() if i not in stopwords)
-    #return output
+    return output
 
-def prepareBagOfWords(bagOfWords, data):
-    #bagOfWords = data['review'].apply(lambda column: Counter(column.split()))
-    bagOfWords.extend(data.split())
-
-#def prepareDataset(bagOfWords, row):
-
+def removeStopWords(row, stopWords):
+    return ''.join(i for i in row if i not in stopWords)
 
 data = pd.read_csv('C:/Study/NLP/Practice_python/IMDB_Dataset_Stripped.csv', delimiter=',')
 data['output'] = data.apply(lambda row: makeOutputInt(row), axis=1)
 data['review'] = data['review'].astype(str)
 data['review'] = data['review'].apply(preprocessInput)
-bagOfWords=[]
-data['review'].apply(lambda row: prepareBagOfWords(bagOfWords, row))
-#counter = Counter(bagOfWords)
-index = 0
+print(data['review'][1])
 
-new_data = pd.DataFrame()
+nlp = spacy.load('en_core_web_sm')
+stopwords = list(STOP_WORDS)
 
-for each in bagOfWords:
-    bagList = []
-    bagList.append(sum(1 for i in data.iloc[index]['review'].split() if i == each))
-    index = index + 1
-    #print(bagList)
-    new_data[each] = bagList
-
-
+data['review'] = data['review'].apply(lambda row: removeStopWords(row, stopwords))
+print(data['review'][1])

@@ -4,7 +4,7 @@ import re
 import spacy
 from spacy.lang.en.stop_words import STOP_WORDS
 from spacy.tokenizer import Tokenizer
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 # Funtion to return 1 or 0 as output
@@ -19,28 +19,27 @@ def makeOutputInt(row):
 # Function to do the preprocessing on input text
 # Input: Input string
 # Output: Preprocessed string
-def preprocessInput(row):
+def preprocessInput(row, tokenizer):
     regex = re.compile('[^a-zA-Z ]')
     output = regex.sub('', row.lower())
-    return output
+
+    tokens = tokenizer(output)
+
+    filtered_tokens = " ".join(token.text for token in tokens if not token.is_stop)
+    return filtered_tokens
 
 
 data = pd.read_csv('C:/Study/NLP/Practice_python/IMDB_Dataset_Stripped.csv', delimiter=',')
 data['output'] = data.apply(lambda row: makeOutputInt(row), axis=1)
 data['review'] = data['review'].astype(str)
-data['review'] = data['review'].apply(preprocessInput)
+print(len(data))
 
 nlp = spacy.load('en_core_web_sm')
-stopwords = list(STOP_WORDS)
-
-joinedList = ""
-for each in data['review']:
-    joinedList = joinedList + each
-
 tokenizer = nlp.tokenizer
-tokens = tokenizer(joinedList)
 
-filtered_tokens = [token for token in tokens if not token.is_stop]
+data['review'] = data['review'].apply(lambda row: preprocessInput(row, tokenizer))
 
-vectorizer = CountVectorizer()
-vectors = vectorizer.fit_transform(filtered_tokens)
+vectorizer = TfidfVectorizer()
+vectorizedOut =vectorizer.fit_transform(data['review'])
+print(vectorizedOut.todense())
+

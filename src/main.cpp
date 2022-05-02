@@ -2,17 +2,22 @@
 #include "spacy/spacy"
 #include <fstream>
 #include <string>
+#include "csv.hpp"
 
-const std::string wikiText = "/mnt/c/Study/NLP/FreeCodeCamp/resources/test.txt";
+const std::string dataSet = "/mnt/c/Study/NLP/FreeCodeCamp/IMDB_Dataset.csv";
 int main()
 {
     Spacy::Spacy spacy;
     auto nlp = spacy.load("en_core_web_sm");
 
-    std::ifstream _ifstream(wikiText);
-    std::string _inputText;
-    auto doc = nlp.parse("This is a sentence.");
-    for (auto& token : doc.tokens())
-        std::cout << token.text() << " [" << token.pos_() << "]\n";
+    csv::CSVReader reader(dataSet);
+
+    auto columnNames = reader.get_col_names();
+
+    for(auto each : columnNames)
+    {
+        std::cout << each << "\n";
+    }
+
     return 0;
 }
